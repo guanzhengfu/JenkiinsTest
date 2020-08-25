@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>chat</title>
+    <script src="jquery-3.3.1.js"></script>
+    <script>
+        function login() {
+            if ("WebSocket" in window)
+            {
+                var sendUser=document.getElementById("sendUser").value;
+                // 打开一个 web socket
+                ws = new WebSocket("ws://localhost:8001/chat/"+sendUser);
+                ws.onopen = function()
+                {
+                    console.log("连接成功");
+                    document.getElementById("sendUser").disabled=true;
+                    document.getElementById("status").innerHTML="连接成功";
+                };
+                ws.onmessage = function (event)
+                {
+                    if(event.data.indexOf("count")>-1){
+                        var msg=event.data;
+                        var data=msg.split(":");
+                        document.getElementById('count').innerHTML=data[1];
+                    }
+                    else
+                    {
+                        setMessageInnerHTML(event.data);
+                    }
+                };
+
+                ws.onclose = function()
+                {
+                    console.log("连接关闭");
+                    document.getElementById("status").html="已关闭连接";
+                };
+                window.onbeforeunload=function () {
+                    ws.close();
+                }
+            }
+            else
+            {
+                // 浏览器不支持 WebSocket
+                alert("您的浏览器不支持 WebSocket!");
+            }
+        }
+        //将消息显示在网页上
+        function setMessageInnerHTML(innerHTML){
+            var str=innerHTML.toString();
+            var s=str.split(":");
+            if(s[0]==-1){
+                var div=$("<div style=\'width: 75%;float: left\'></div>");
+                var br=$("<br></br>");
+                div.html(s[1]);
+                var fatherdiv=$("#allmessage");
+                fatherdiv.append(div);
+                fatherdiv.append(br);
+            }
+            else {
+                var div=$("<div style=\'width: 75%;float: left\'></div>");
+                var br=$("<br></br>");
+                div.html(innerHTML);
+                var fatherdiv=$("#message");
+                fatherdiv.append(div);
+                fatherdiv.append(br);
+            }
+        }
+        //关闭连接
+        function closeWebSocket(){
+            ws.close();
+        }
+
+        //发送消息
+        function send(){
+            var sendUser = document.getElementById("sendUser").value;
+            var toUser = document.getElementById("toUser").value;
+            var message = document.getElementById("sendMessage").value;
+
+            var jsonMsg = {"sendUser":sendUser,"toUser":toUser,"message":message};
+            ws.send(JSON.stringify(jsonMsg));
+
+            console.log("发送的消息"+message);
+            var div=$("<span style=\'float: right;display: block\'></span>");
+            var br=$("<br></br>");
+            div.html(message+" :我 ");
+            var fatherdiv=$("#message");
+            fatherdiv.append(div);
+            fatherdiv.append(br);
+        }
+        //发送群聊消息
+        function allsend(){
+            var sendUser = document.getElementById("sendUser").value;
+            var toUser = -1;
+            var message = document.getElementById("allsendMessage").value;
+
+            var jsonMsg = {"sendUser":sendUser,"toUser":toUser,"message":message};
+            ws.send(JSON.stringify(jsonMsg));
+
+            console.log("发送的消息"+message);
+            var div=$("<span style=\'float: right;display: block\'></span>");
+            var br=$("<br></br>");
+            div.html(message+" :我 ");
+            var fatherdiv=$("#allmessage");
+            fatherdiv.append(div);
+            fatherdiv.append(br);
+        }
+        function onechat() {
+            $("#onechat").show();
+            $("#allchat").hide();
+        }
+        function allchat() {
+            $("#onechat").hide();
+            $("#allchat").show();
+        }
+    </script>
+
+</head>
+    <body>
+        账号:<input type="text" name="sendUser" id="sendUser"/>
+        <input type="button" id="login" value="登录" onclick="login()"/>
+        <input type="button" onclick="closeWebSocket()" value="退出">
+        在线人数:<font id="count"></font> 连接状态:<font id="status"></font>
+        <br/>
+        接收人:<input type="text" name="toUser" id="toUser"><br/>
+        消息框:<br/>
+        <input type="button" onclick="onechat()" value="单聊"><input type="button" onclick="allchat()" value="群聊">
+        <div id="onechat">
+            <div id="message" style="width: 478px;height: 200px;background: mistyrose;overflow: auto;border: 1px solid skyblue">
+
+            </div>
+            <textarea id="sendMessage" style="width: 473px;height: 60px" placeholder="单聊框"></textarea><br>
+            <input type="button" value="发送" onclick="send()"/><input type="button" value="关闭" onclick="closeWebSocket()"/>
+        </div>
+        <div id="allchat" style="display: none">
+            <div id="allmessage" style="width: 478px;height: 200px;background: mistyrose;overflow: auto;border: 1px solid skyblue">
+
+            </div>
+            <textarea id="allsendMessage" style="width: 473px;height: 60px" placeholder="群聊框"></textarea><br>
+            <input type="button" value="发送" onclick="allsend()"/><input type="button" value="关闭" onclick="closeWebSocket()"/>
+        </div>
+    </body>
+</html>
