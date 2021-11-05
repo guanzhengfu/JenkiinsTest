@@ -99,7 +99,7 @@ public class UserContoller {
     OutputStream outputStream = res.getOutputStream();
     byte[] buff = new byte[1024];
     BufferedInputStream bis = null;
-    // 读取filename
+    // 读取filename111
     ApplicationHome app = new ApplicationHome(getClass());
     String dirpath = app.getSource().getParentFile().toString();
     bis = new BufferedInputStream(new FileInputStream(new File(dirpath + "/file/" + filename)));
