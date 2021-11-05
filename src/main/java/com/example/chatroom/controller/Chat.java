@@ -1,4 +1,4 @@
-package com.example.chatroom.Controller;
+package com.example.chatroom.controller;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.websocket.OnClose;
